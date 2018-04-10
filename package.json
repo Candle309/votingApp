@@ -1,0 +1,30 @@
+{
+  "name": "myvotingapp",
+  "version": "1.0.0",
+  "description": "\"# votingApp\"",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Candle309/votingApp.git"
+  },
+  "author": "Cindy",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Candle309/votingApp/issues"
+  },
+  "homepage": "https://github.com/Candle309/votingApp#readme",
+  "dependencies": {
+    "angular-jwt": "^0.1.9",
+    "bcrypt-nodejs": "0.0.3",
+    "body-parser": "^1.18.2",
+    "dotenv": "^5.0.1",
+    "express": "^4.16.3",
+    "jsonwebtoken": "^8.2.1",
+    "mongoose": "^5.0.14",
+    "morgan": "^1.9.0"
+  }
+}
