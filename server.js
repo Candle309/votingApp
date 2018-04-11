@@ -4,6 +4,8 @@ var db = 'mongodb://localhost:27017/my-voting-app';
 //create a port for server to listen on
 var port = process.env.PORT || 8000;
 
+//load in router
+var router = require("./routes/api");
 
 
 //load in node modules
@@ -41,7 +43,9 @@ mongoose.connection.on("error", function(){
 app.use(morgan("dev"));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended : false}));
+app.use("/node_modules", express.static(__dirname + '/node_modules'));
 app.use(express.static(__dirname + '/public'));
+app.use("/api", router);
 app.get("*", function(req, res){
     res.sendFile(__dirname + "/public/index.html");
 })

@@ -2,50 +2,80 @@
     var app = angular.module("app", ["ngRoute", "angular-jwt"]);
     app.config(function($routeProvider, $locationProvider){
         $locationProvider.html5Mode(true);
-        $locationProvider.when('/', {
+        $routeProvider.when('/', {
             templateUrl: "./templates/main.html",
             controller: "MainController",
-            controllerAs: "vm"
+            controllerAs: "vm",
+            access: {
+                restricted: false
+            }
         });
-        $locationProvider.when('/login', {
+        $routeProvider.when('/login', {
             templateUrl: "./templates/login.html",
             controller: "LoginController",
-            controllerAs: "vm"
+            controllerAs: "vm",
+            access: {
+                restricted: false
+            }
         });
-        $locationProvider.when('/register', {
+        $routeProvider.when('/register', {
             templateUrl: "./templates/register.html",
             controller: "RegisterController",
-            controllerAs: "vm"
+            controllerAs: "vm",
+            access: {
+                restricted: false
+            }
         });
-        $locationProvider.when('/polls', {
+        $routeProvider.when('/polls', {
             templateUrl: "./templates/polls.html",
             controller: "PollsController",
-            controllerAs: "vm"
+            controllerAs: "vm",
+            access: {
+                restricted: false
+            }
         });
-        $locationProvider.when('/polls/:id', {
+        $routeProvider.when('/polls/:id', {
             templateUrl: "./templates/poll.html",
             controller: "PollController",
-            controllerAs: "vm"
+            controllerAs: "vm",
+            access: {
+                restricted: false
+            }
         });
-        $locationProvider.when('/profile', {
+        $routeProvider.when('/profile', {
             templateUrl: "./templates/profile.html",
             controller: "ProfileController",
-            controllerAs: "vm"
+            controllerAs: "vm",
+            access: {
+                restricted: true
+            }
         });
+        $routeProvider.otherwise('/');
     });
     app.controller("MainController", MainController);
     function MainController($location, $window){
-
+        var vm = this;
+        vm.title = "MainController";
     }
     app.controller("LoginController", LoginController);
     function LoginController($location, $window){
         var vm = this;
-        vm.title = "LoginController";
+        vm.title = "LoginController";       
     }
     app.controller("RegisterController", RegisterController);
-    function RegisterController($location, $window){
+    function RegisterController($location, $window, $http){
         var vm = this;
         vm.title = "RegisterController";
+        vm.error = "";
+        vm.register = function() {
+            $http.post("/api/register", vm.user)
+            .then(function(res){
+                console.log(res);
+            }, function(err){
+                console.log(err);
+                vm.error = err.data.errmsg;
+            });
+        }
     }
     app.controller("ProfileController", ProfileController);
     function ProfileController($location, $window){
@@ -63,5 +93,4 @@
         vm.title = "PollController"
     }
     
-
 }())
