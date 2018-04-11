@@ -3,6 +3,19 @@ var router = express.Router({caseSensitive: true});
 var bcrypt = require("bcrypt-nodejs");
 var jwt = require("jsonwebtoken");
 var User = require("../models/user");
+var Poll = require("../models/polls");
+
+//create a new poll
+router.post("/polls", authenticate, function(req, res) {
+    if(!req.body.polls) {
+        return res.status(400).send("No poll data supplied!");
+    }
+    var poll = new Poll();
+    poll.name = req.body.poll.name;
+    poll.options = req.body.poll.options;
+    var token = req.headers.authorization.split(" ")[1];
+    //jwt.
+});
 
 //verification of token
 router.post("/verify", function(req, res) {
@@ -69,5 +82,21 @@ router.post("/register", function(req, res){
     }
 });
 
+//authentication middleware
+function authenticate(req, res, next) {
+    if (!req.headers.authorization) {
+        return res.status(400).send("No token supplied");
+    }
+    if (req.headers.authorization.split(" ")[1]) {
+        var token = req.headers.authorization.split(" ")[1];
+        jwt.verify(token, process.env.secret, function(err, decoded) {
+            if (err) {
+                return res.status(400).send(err);
+            }
+            console.log("continueing with middleware chain");
+            next();
+        })
+    }
+}
 
 module.exports = router;
