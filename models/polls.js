@@ -14,7 +14,7 @@ var PollsSchema = new Schema({
         name: {
             type: String,
             required: true,
-            unique: true
+            unique: false
         },
         votes: {
             type: Number,

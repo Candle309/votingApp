@@ -8,3 +8,7 @@
 </br>
 </br>
 <button ng-click="vm.addPoll()" ng-disabled="!vm.poll.name">Add Poll</button>
+<hr>
+<ul>
+    <li ng-repeat="poll in vm.polls">{{poll.name}} -- {{poll._id}}</li>
+</ul>

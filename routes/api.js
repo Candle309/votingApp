@@ -7,14 +7,20 @@ var Poll = require("../models/polls");
 
 //create a new poll
 router.post("/polls", authenticate, function(req, res) {
-    if(!req.body.polls) {
+    if(!req.body.options || !req.body.name) {
         return res.status(400).send("No poll data supplied!");
     }
     var poll = new Poll();
-    poll.name = req.body.poll.name;
-    poll.options = req.body.poll.options;
-    var token = req.headers.authorization.split(" ")[1];
-    //jwt.
+    poll.name = req.body.name;
+    poll.options = req.body.options;
+ //   var token = req.headers.authorization.split(" ")[1];
+    poll.user = req.body.id;
+    poll.save(function(err, resp) {
+        if(err) {
+            return res.status(400).send(err);
+        }
+        return res.status(201).send(resp);
+    })
 });
 
 //verification of token
