@@ -7,7 +7,6 @@ var port = process.env.PORT || 8000;
 //load in router
 var router = require("./routes/api");
 
-
 //load in node modules
 var express = require("express");
 var morgan = require("morgan");
