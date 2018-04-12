@@ -10,7 +10,10 @@ var UserSchema = new Schema({
     password: {
         type: String,
         required: true
-    }
+    },
+    polls: [{
+        type: mongoose.Schema.Types.ObjectId, ref: "Polls"
+    }]
 });
 /*
 UserSchema.pre("save", function(next){
