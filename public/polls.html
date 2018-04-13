@@ -1,14 +1,20 @@
 <h3>{{vm.title}}</h3>
 <hr>
+<div class="add" ng-if="vm.isLoggedIn() === true">
 <input type="text" ng-model="vm.poll.name" placeholder="Name of poll...">
 <hr>
-<input type="text" ng-model="vm.poll.options[$index].name" ng-repeat="option in vm.poll.options" class="form-control" placeholder="Option name" style="padding: 10px;">
+<input type="text" ng-model="vm.poll.options[$index].name" ng-repeat="option in vm.poll.options" class="form-control" placeholder="Option name" style="margin-bottom:10px">
 <hr>
-<button ng-click="vm.addOption()" class="btn btn-primary">Add option</button>
+<button ng-click="vm.addOption()" class="btn btn-warning btn-block">Add option</button>
 </br>
 </br>
-<button ng-click="vm.addPoll()" ng-disabled="!vm.poll.name">Add Poll</button>
+<button ng-click="vm.addPoll()" class="btn btn-primary btn-block" ng-disabled="!vm.poll.name">Add Poll</button>
+</div>
 <hr>
 <ul>
-    <li ng-repeat="poll in vm.polls">{{poll.name}} -- {{poll._id}}</li>
+    <li ng-repeat="poll in vm.polls">
+        <a href="/poll/{{poll._id}}">
+            {{poll.name}}
+        </a>
+    </li>
 </ul>
