@@ -4,35 +4,20 @@ var jwt = require("jsonwebtoken");
 var User = require("../models/user");
 var Poll = require("../models/polls");
 var router = express.Router({caseSensitive: true});
-/*
-//test populate route to get all polls by user id
-router.get("/tester", function(req, res) {
-    User.findOne({name: "123"})
-    .populate("polls")
-    .exec(function(err, polls) {
-        if (err) {
-            return res.status(400).send(err);
-        }
-        return res.status(200).send(polls);
-    })
-})*/
-
 
 //vote
 router.put('/polls/', function(request, response) {
-    console.log(typeof request.body.vote);
     Poll.findById(request.body.id, function(err, poll) {
         if (err) {
             return response.status(400).send(err)
         }
-        console.log(poll)
         for (var i = 0; i < poll.options.length; i++) {
-            if (poll.options[i]._id.toString() === request.body.vote) {
-                console.log('hit');
+            if (poll.options[i]._id.toString() === request.body.vote) {               
                 poll.options[i].votes += 1;
+                console.log(poll.options[i].votes);
                 poll.save(function(err, res) {
                     if (err) {
-                        return response.status(400).send(err)
+                        return response.status(400).send(err);
                     } else {
                         return response.status(200).send({
                             message: 'Successfully updated poll!'
@@ -73,7 +58,7 @@ router.get("/polls", function(req, res) {
 router.get('/user-polls/:name', function(request, response) {
     if (!request.params.name) {
         return response.status(400).send({
-            message: 'No user name supplied';
+            message: 'No user name supplied'
         })
     } else {
         Poll.find({owner: request.params.name }, function(err, documents) {
@@ -87,27 +72,33 @@ router.get('/user-polls/:name', function(request, response) {
 });
 
 //create a new poll
-router.post("/polls", authenticate, function(req, res) {
-    if(!req.body.options || !req.body.name) {
-        return res.status(400).send("No poll data supplied!");
-    }
+router.post('/polls', authenticate, function(request, response) {
     var poll = new Poll();
-    poll.name = req.body.name;
-    poll.options = req.body.options;
+    poll.name = request.body.name;
+    poll.options = request.body.options;
     poll.owner = request.body.owner;
-    poll.save(function(err, resp) {
-        if(err) {
+    console.log(poll.options.length);
+    for (var i = 0; i < poll.options.length; i++) {
+        for (var j = 0; j < i; j++) {           
+            if (poll.options[i].name === poll.options[j].name) {
+                return response.status(400).send("No dupilicate options!");
+            }
+        }
+    }
+    poll.save(function(err, document) {
+        if (err) {
             if (err.code === 11000) {
                 return response.status(400).send('No dupes!');
             }
             return response.status(400).send(err)
+        } else {
+            return response.status(201).send({
+                message: 'Successfully created a poll',
+                data: document
+            })
         }
-        else return res.status(201).send({
-            message: 'Successfully created a poll',
-            data: document
-        });
     })
-});
+})
 
 //add an option to poll
 router.put('/polls/add-option', function(request, response) {
@@ -153,7 +144,7 @@ router.delete('/polls/:id', function(request, response) {
         }
         if (poll) {
             var token = request.headers.authorization.split(' ')[1];
-            jwt.verify(token, 'fcc', function(err, decoded) {
+            jwt.verify(token, process.env.secret, function(err, decoded) {
                 if (err) {
                     return response.status(401).json('Unauthorized request: invalid token')
                 } else {

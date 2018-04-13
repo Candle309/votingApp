@@ -5,11 +5,11 @@
     app.run(function($http, $rootScope, $location, $window){
         $http.defaults.headers.common.Authorization = 'Bearer ' + $window.localStorage.token;
         $rootScope.$on("$routeChangeStart", function (event, nextRoute, currentRoute) {
-            if (nextRoute.access.restricted !== undefined && nextRoute.access.restricted === true && !window.localStorage.token) {
+            if (nextRoute.access !== undefined && nextRoute.access.restricted === true && !window.localStorage.token) {
                 event.preventDefault();
-                $location.path("/login");
+                $location.path("/");
             }
-            if (window.localStorage.token && nextRoute.access.restricted === true) {
+            if($window.localStorage.token && nextRoute.access.restricted === true) {
                 $http.post("/api/verify", {token: $window.localStorage.token})
                 .then(function(res) {
                     console.log("Your token is valid");
@@ -57,7 +57,7 @@
                 restricted: false
             }
         });
-        $routeProvider.when('/polls/:id', {
+        $routeProvider.when('/poll/:id', {
             templateUrl: "poll.html",
             controller: "PollController",
             controllerAs: "vm",
@@ -86,7 +86,10 @@
     function LoginController($location, $window, $http, $timeout){
         var vm = this;
         vm.title = "LoginController"; 
-        vm.error = "";
+        vm.user = {
+            name: '',
+            password: ''
+        }
         vm.login = function() {
             if (vm.user) {
                 $http.post("/api/login", vm.user)
@@ -94,7 +97,7 @@
                     $window.localStorage.token = res.data;
                     $location.path("/profile");
                 }, function(err) {
-                    console.log(error)
+                    console.log(err);
                 });
             } else {
                 console.log("No credentials supplied");
@@ -108,6 +111,10 @@
     function RegisterController($location, $http, $window, $timeout) {
         var vm = this;
         vm.title = "RegisterController";
+        vm.user = {
+            name: '',
+            password: ''
+        }
         vm.register = function() {
             if(vm.user) {
                 $http.post('/api/register', vm.user).
@@ -132,28 +139,12 @@
     }
 
     app.controller("ProfileController", ProfileController);
-    function ProfileController($location, $window, jwtHelper){
+    function ProfileController($http, $location, $window, jwtHelper){
         var vm = this;
         vm.title = "ProfileController";
         vm.currentUser = null;
         vm.polls = [];
         var token = $window.localStorage.token;
-        var payload = jwtHelper.decodeToken(token).data;
-
-        if (payload) {
-            if(vm.currentUser !== null )  {
-                vm.getPollsByUser();
-            }
-        }
-
-        vm.logOut = function() {
-            $window.localStorage.removeItem('token');
-            vm.message = 'Logging you out...';
-            $timeout(function() {
-                vm.message = '';
-                 $location.path('/');
-            }, 2000);
-        }
 
         vm.getPollsByUser = function() {
             $http.get('/api/user-polls/'+ vm.currentUser.name)
@@ -177,10 +168,27 @@
                 return false;
             }
         }
+
+        if(token) {
+            vm.currentUser = jwtHelper.decodeToken(token).data;
+            if(vm.currentUser !== null )  {
+                vm.getPollsByUser();
+            }
+         }
+
+        vm.logOut = function() {
+            $window.localStorage.removeItem('token');
+            vm.message = 'Logging you out...';
+            $timeout(function() {
+                vm.message = '';
+                 $location.path('/');
+            }, 2000);
+        }
+
     }
 
     app.controller("PollsController", PollsController);
-    function PollsController($location, $window, $http, jwtHelper){
+    function PollsController($location, $window, $http, jwtHelper, $routeParams){
         var vm = this;
         var user = jwtHelper.decodeToken($window.localStorage.token);
         vm.title = "PollsController";
@@ -202,6 +210,11 @@
         vm.isLoggedIn();
 
         vm.addOption = function() {
+            for (var i = 0; i < vm.poll.options.length - 1; i++) {
+                if (vm.poll.options[i].name === vm.poll.options[vm.poll.options.length - 1].name) {
+                   return alert("No duplicate options!")
+                }
+            }
             vm.poll.options.push({
                 name: "",
                 votes: 0
@@ -236,13 +249,21 @@
             $http.post("/api/polls", payload)
             .then(function(res) {
                 console.log(res.data);
-                vm.poll = {};
+                vm.polls = [];
+                vm.poll = {
+                    options: [{
+                        name: "",
+                        votes: 0
+                    }],
+                    name: "",
+                }
                 vm.getAllPolls();
             }, function(err) {
                 console.error(err);
             });
         }
     }
+   
 
     app.controller("PollController", PollController);
     function PollController($http, $routeParams, $location, $window){
@@ -269,10 +290,12 @@
             var id = $routeParams.id;
             $http.get('/api/poll/' + id)
                  .then(function(response) {
+                     
                     vm.id = response.data._id;
                     vm.owner = response.data.owner;
                     vm.poll = response.data.options;
                     console.log(vm.poll);
+                    
                     vm.data = response.data;
                     google.charts.load('current', {'packages':['corechart']});
                     google.charts.setOnLoadCallback(drawChart);
